@@ -4,6 +4,7 @@ import subprocess
 
 VERSION_PAT = re.compile(r'.*git\s+version\s+(\d+)[.](\d+)(?:[.](\d+))?\s*')
 GIT_ENV = {'GIT_TERMINAL_PROMPT': '0'}
+SAFE_CWD = os.path.expanduser('~')
 
 
 def is_installed():
@@ -20,21 +21,36 @@ def run_git(args):
     return proc
 
 
+def safecwd():
+    try:
+        return os.getcwd()
+    except:
+        # Git won't run if cwd is invalid. Set cwd to something that should always exist.
+        cwd = SAFE_CWD
+        os.chdir(cwd)
+        return cwd
+
+
 def clone(remote, local):
-    if os.path.exists(local):
-        raise Exception('Path %s already exists.' % local)
-    run_git(['clone', remote, local])
+    oldcwd = safecwd()
+    os.chdir(SAFE_CWD)
+    try:
+        if os.path.exists(local):
+            raise Exception('Path %s already exists.' % local)
+        run_git(['clone', remote, local])
+    finally:
+        os.chdir(oldcwd)
 
 
 def pull(local):
     if not os.path.isdir(os.path.join(local, '.git')):
         raise Exception('Path %s does not exist or is not a git repo.')
-    curdir = os.getcwd()
+    oldcwd = os.getcwd()
     os.chdir(local)
     try:
         proc = run_git(['pull', '--ff-only'])
     finally:
-        os.chdir(curdir)
+        os.chdir(oldcwd)
 
 
 if __name__ == '__main__':

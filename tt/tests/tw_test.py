@@ -4,6 +4,8 @@ import tempfile
 
 from .. import tw
 
+SAMPLE_PAGE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'sample-page.md')
+
 
 def test_short_parseable():
     ctwg = tw.TermsWiki('ctwg-terms')
@@ -49,3 +51,20 @@ def test_refresh(scratch_space):
     x.refresh(force=True)
     # If refresh worked, we should now have the parsec.md file.
     assert os.path.isfile('parsec.md')
+
+
+def test_pages_iter(scratch_space):
+    x = tw.TermsWiki(tw.SAMPLE_TERMS_WIKI_REPO)
+    pages = [p for p in x.pages]
+    assert len(pages) == 3
+
+
+def test_page():
+    page = tw.Page(SAMPLE_PAGE)
+    assert page.is_term
+    assert page.term == "sample-page"
+    assert "#tag1" in page.tags
+
+
+if __name__ == '__main__':
+    test_page()
