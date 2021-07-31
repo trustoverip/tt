@@ -1,4 +1,5 @@
 import io
+import re
 
 from . import tw
 from . import markdown
@@ -8,6 +9,8 @@ import os
 with open(os.path.join(os.path.dirname(__file__), 'default.css'), 'rt') as f:
     DEFAULT_CSS = '  <style>\n%s\n  </style>\n' % f.read()
 del os
+
+WIKI_PAGE_LINK_PAT = re.compile(r'[a-z0-9]+(-[a-z0-9]+)*$', re.IGNORECASE)
 
 
 class Source:
@@ -54,7 +57,26 @@ class Glossary:
     def primary_source(self):
         return self._sources[0] if self._sources else None
 
+    def handle_synonyms(self):
+        # Make a copy of pages list that I can iterate safely
+        # while I'm changing the other list.
+        pages = self.pages[:]
+        for page in pages:
+            twin = None
+            if page.acronym:
+                twin = page.make_acronym_twin()
+                self._pages.append(twin)
+        self._pages.sort(key=lambda p: p.fragment)
+
+    def fix_hyperlinks(self):
+        for page in self.pages:
+            for link in markdown.walk_hyperlinks(page.ast):
+                if WIKI_PAGE_LINK_PAT.match(link.dest):
+                    link.dest = '#' + link.dest
+
     def render(self):
+        self.handle_synonyms()
+        self.fix_hyperlinks()
         out = io.StringIO()
         if self.is_standalone_doc:
             out.write("<html>\n<head>\n")
@@ -66,7 +88,7 @@ class Glossary:
             out.write("</head>\n<body>\n<header>%s</header>\n<main>\n" % self.title)
         out.write("<dl>")
         for page in self.pages:
-            out.write('\n<dt id="%s">%s</dt>\n' % (page.fragment, page.term))
+            out.write('\n<dt id="%s">%s</dt>\n' % (page.fragment, page.term_minus_acronym))
             this_def = page.get_section_by_fragment('definition')
             if this_def:
                 out.write("<dd>%s</dd>\n" % markdown.render_html(this_def.content))

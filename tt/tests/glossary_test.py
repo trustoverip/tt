@@ -12,6 +12,7 @@ SAMPLE_GLOSSARY_CFG = json.loads("""{
     ]
 }""")
 
+
 def test_ultra_simple_write():
     g = Glossary(SAMPLE_GLOSSARY_CFG)
     txt = g.render()

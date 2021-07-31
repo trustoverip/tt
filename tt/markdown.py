@@ -26,6 +26,15 @@ def render_html(ast):
     return r.render(ast)
 
 
+def walk_hyperlinks(ast):
+    if type(ast) is marko.inline.Link:
+        yield ast
+    elif hasattr(ast, 'children') and ast.children and type(ast.children) is not str:
+        for child in ast.children:
+            for link in walk_hyperlinks(child):
+                yield link
+
+
 def split(ast):
     sections = []
     section_children = []
@@ -228,6 +237,7 @@ class Section(marko.block.BlockElement):
 
     def __str__(self):
         return '# %s\n%s' % (self.title, self.text)
+
 
 
 if __name__ == '__main__':

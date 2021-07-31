@@ -8,14 +8,14 @@ body {
 header {
     background-color: #3061a8;
     color: white;
-    padding: 36px 12px 24px;
+    padding: 36px 16px 20px;
     font-family: Verdana, sans-serif;
     font-size: 150%;
     font-weight: bold;
 }
 
 main {
-    padding: 12px;
+    padding: 16px;
     color: #444;
 }
 
@@ -32,4 +32,26 @@ dd {
 
 dd>p:first-child {
   margin-top: 0.2em;
+}
+
+a {
+    color: #3061a8;
+    text-decoration: none;
+}
+
+a:link {
+    border-bottom: dashed 1px #ccc;
+}
+
+a:hover {
+    border-bottom: solid 1px #3061a8;
+    background-color: #fff;
+}
+
+a:active {
+    background-color: #eee;
+}
+
+a:visited {
+    color: #6161a8;
 }

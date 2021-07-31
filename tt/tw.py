@@ -14,6 +14,7 @@ LOCAL_PATH = os.path.normpath(os.path.expanduser('~/.tt/corpus'))
 WIKI_SUFFIX = '.wiki'
 SAMPLE_TERMS_WIKI_REPO = 'git@github.com:dhh1128/scifi-terms.git'
 TAGS_SPLITTER = re.compile(r'[* \t\r\n,]+')
+ACRONYM_PAT = re.compile(r'(.*?)\s*\(([^)]+)\)$')
 
 
 class TermsWiki:
@@ -78,6 +79,7 @@ class Page:
         self.path = os.path.normpath(os.path.abspath(path))
         self._ast = None
         self._sections = None
+        self.term = self.fname[:-3].replace('-', ' ')
 
     @property
     def wiki(self):
@@ -88,16 +90,22 @@ class Page:
         return self.fname not in ['Home.md']
 
     @property
+    def acronym(self):
+        m = ACRONYM_PAT.match(self.term)
+        return m.group(2) if m else None
+
+    @property
+    def term_minus_acronym(self):
+        m = ACRONYM_PAT.match(self.term)
+        return m.group(1) if m else self.term
+
+    @property
     def fname(self):
         return os.path.basename(self.path)
 
     @property
     def fragment(self):
         return markdown.title_to_fragment(self.term)
-
-    @property
-    def term(self):
-        return self.fname[:-3]
 
     def get_section_by_fragment(self, fragment):
         for item in self.sections:
@@ -122,3 +130,20 @@ class Page:
         if self._sections is None:
             self._sections = markdown.split(self.ast)
         return self._sections
+
+    def make_acronym_twin(self):
+        twin = Page(self.path, self.wiki)
+        twin.term = self.acronym
+        # Parse a markdown fragment into a marko.block.Document object
+        twin._ast = markdown.parse("Synonym for [%s](%s)." % (
+            self.term_minus_acronym, self.fragment))
+        # Convert the top-level obj into a Section so it doesn't get
+        # enclosed in <html>...</html> when rendered.
+        section = markdown.Section(twin._ast.children)
+        # Adjust internals of the section so lazy calculation
+        # doesn't interpret its type and content wrong.
+        section._title = 'definition'
+        section._content = section.children[0]
+        # Now make the twin look like something we actually parsed from markdown.
+        twin._sections = [section]
+        return twin
