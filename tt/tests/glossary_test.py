@@ -13,11 +13,11 @@ SAMPLE_GLOSSARY_CFG = json.loads("""{
 }""")
 
 def test_ultra_simple_write():
-    s = Glossary(SAMPLE_GLOSSARY_CFG)
-    txt = io.StringIO()
-    s.write(txt)
-    txt.seek(0)
-    txt = txt.read()
+    g = Glossary(SAMPLE_GLOSSARY_CFG)
+    txt = g.render()
+    with open("/Users/dhardman/Desktop/x.html", "wt") as f:
+        f.write(txt)
+
     expected = ['<html>', '<head>', '</head>', '<body>',
                 '<title>My Simple Glossary</title>',
                 'wormhole',
@@ -27,10 +27,6 @@ def test_ultra_simple_write():
     ]
     missing = [x for x in expected if x not in txt]
     assert not bool(missing)
-
-
-if __name__ == '__main__':
-    test_ultra_simple_write()
 
 
 
