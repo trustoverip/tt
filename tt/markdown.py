@@ -14,8 +14,16 @@ def render(ast):
     """
     Turn an abstract syntax tree (AST) into markdown text.
     """
-    md = MarkdownRenderer()
-    return md.render(ast)
+    r = MarkdownRenderer()
+    return r.render(ast)
+
+
+def render_html(ast):
+    """
+    Turn an abstract syntax tree (AST) into html.
+    """
+    r = marko.HTMLRenderer()
+    return r.render(ast)
 
 
 def split(ast):
@@ -50,7 +58,7 @@ NON_ALPHANUMS_PAT = re.compile('[^a-z0-9]+', re.I)
 
 
 def title_to_fragment(title):
-    return '#' + NON_ALPHANUMS_PAT.sub(' ', title.lower()).strip().replace(' ', '-')
+    return NON_ALPHANUMS_PAT.sub(' ', title.lower()).strip().replace(' ', '-')
 
 
 class MarkdownRenderer(marko.renderer.Renderer):

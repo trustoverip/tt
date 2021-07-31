@@ -43,7 +43,7 @@ def test_section():
     # first section
     s = sections[0]
     assert s.title == "Definition"
-    assert s.fragment == '#definition'
+    assert s.fragment == 'definition'
     assert re.compile(r".*?common context.*?disambiguates.*?Note:.*?[*]italic",
                       re.MULTILINE + re.DOTALL).search(s.text)
     assert 'Example' not in s.text
@@ -60,7 +60,7 @@ def test_section():
 
     # fourth section
     s = sections[3]
-    assert s.fragment == '#tags'
+    assert s.fragment == 'tags'
     assert '#tag3' in s.text
 
 

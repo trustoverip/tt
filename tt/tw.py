@@ -69,8 +69,7 @@ class TermsWiki:
                 folders.remove('.git')
             for f in files:
                 if f.endswith('.md'):
-                    complete_path = os.path.join(self.folder, root, f)
-                    yield Page(os.path.relpath(self.folder, complete_path), self)
+                    yield Page(os.path.join(root, f), self)
 
 
 class Page:
@@ -93,24 +92,21 @@ class Page:
         return os.path.basename(self.path)
 
     @property
+    def fragment(self):
+        return markdown.title_to_fragment(self.term)
+
+    @property
     def term(self):
         return self.fname[:-3]
 
-    @property
-    def definition_section(self):
+    def get_section_by_fragment(self, fragment):
         for item in self.sections:
-            if item.fragment == '#definition':
-                return item
-
-    @property
-    def tags_section(self):
-        for item in self.sections:
-            if item.fragment == '#tags':
+            if item.fragment == fragment:
                 return item
 
     @property
     def tags(self):
-        ts = self.tags_section
+        ts = self.get_section_by_fragment('tags')
         if ts:
             return TAGS_SPLITTER.split(ts.text)
 

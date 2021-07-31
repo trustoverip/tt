@@ -56,7 +56,7 @@ def test_refresh(scratch_space):
 def test_pages_iter(scratch_space):
     x = tw.TermsWiki(tw.SAMPLE_TERMS_WIKI_REPO)
     pages = [p for p in x.pages]
-    assert len(pages) == 3
+    assert len(pages) >= 3
 
 
 def test_page():
