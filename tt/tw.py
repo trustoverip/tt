@@ -1,6 +1,3 @@
-import os
-import re
-import subprocess
 import weakref
 
 from .tag import normalize
@@ -14,6 +11,7 @@ LOCAL_PATH = os.path.normpath(os.path.expanduser('~/.tt/corpus'))
 WIKI_SUFFIX = '.wiki'
 SAMPLE_TERMS_WIKI_REPO = 'git@github.com:dhh1128/scifi-terms.git'
 TAGS_SPLITTER = re.compile(r'[* \t\r\n,]+')
+ACRONYM_PAT = re.compile(r'(.*?)\s*\(([^)]+)\)$')
 
 
 class TermsWiki:
@@ -78,6 +76,9 @@ class Page:
         self.path = os.path.normpath(os.path.abspath(path))
         self._ast = None
         self._sections = None
+        self.term = self.fname[:-3].replace('-', ' ')
+        self._hovertext = None
+        self._history = None
 
     @property
     def wiki(self):
@@ -85,7 +86,17 @@ class Page:
 
     @property
     def is_term(self):
-        return self.fname not in ['Home.md']
+        return self.fname not in ['Home.md', 'Tags.md']
+
+    @property
+    def acronym(self):
+        m = ACRONYM_PAT.match(self.term)
+        return m.group(2) if m else None
+
+    @property
+    def term_minus_acronym(self):
+        m = ACRONYM_PAT.match(self.term)
+        return m.group(1) if m else self.term
 
     @property
     def fname(self):
@@ -96,8 +107,16 @@ class Page:
         return markdown.title_to_fragment(self.term)
 
     @property
-    def term(self):
-        return self.fname[:-3]
+    def hovertext(self):
+        if self._hovertext is None:
+            self._hovertext = ""
+            dfn = self.get_section_by_fragment('definition')
+            if dfn:
+                for child in dfn.children:
+                    if type(child) is markdown.marko.block.Paragraph:
+                        self._hovertext = markdown.make_hovertext(child)
+                        break
+        return self._hovertext
 
     def get_section_by_fragment(self, fragment):
         for item in self.sections:
@@ -106,9 +125,17 @@ class Page:
 
     @property
     def tags(self):
+        x = []
+        w = self.wiki
+        if w:
+            x.append(w.tag)
         ts = self.get_section_by_fragment('tags')
         if ts:
-            return TAGS_SPLITTER.split(ts.text)
+            term_specific_tags = TAGS_SPLITTER.sub(' ', ts.text).strip()
+            if term_specific_tags:
+                x += term_specific_tags.split(' ')
+        x.sort()
+        return x
 
     @property
     def ast(self):
@@ -118,7 +145,63 @@ class Page:
         return self._ast
 
     @property
+    def history(self):
+        if self._history is None:
+            try:
+                self._history = get_history(self.path)
+            except:
+                self._history = []
+        return self._history
+
+    @property
+    def version(self):
+        return len(self._history) if self.history else 0
+
+    @property
+    def hash(self):
+        return self._history[0][:7] if self.history else 0
+
+    @property
+    def creation_date(self):
+        if self.history:
+            return int(self._history[-1][self._history[-1].rfind(',') + 1:])
+
+    @property
+    def lastmod_date(self):
+        if self.history:
+            return int(self._history[0][self._history[0].rfind(',') + 1:])
+
+    @property
+    def contributors(self):
+        if self.history:
+            c = []
+            for event in self._history:
+                i = event.find(',')
+                j = event.rfind(',')
+                person = event[i+1:j]
+                if person not in c:
+                    c.append(person)
+            return c
+
+    @property
     def sections(self):
         if self._sections is None:
             self._sections = markdown.split(self.ast)
         return self._sections
+
+    def make_acronym_twin(self):
+        twin = Page(self.path, self.wiki)
+        twin.term = self.acronym
+        # Parse a markdown fragment into a marko.block.Document object
+        twin._ast = markdown.parse("Synonym for [%s](%s)." % (
+            self.term_minus_acronym, self.fragment))
+        # Convert the top-level obj into a Section so it doesn't get
+        # enclosed in <html>...</html> when rendered.
+        section = markdown.Section(twin._ast.children)
+        # Adjust internals of the section so lazy calculation
+        # doesn't interpret its type and content wrong.
+        section._title = 'definition'
+        section._content = section.children[0]
+        # Now make the twin look like something we actually parsed from markdown.
+        twin._sections = [section]
+        return twin

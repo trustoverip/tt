@@ -53,6 +53,17 @@ def pull(local):
         os.chdir(oldcwd)
 
 
+def get_history(path):
+    oldcwd = os.getcwd()
+    folder, fname = os.path.split(path)
+    os.chdir(folder)
+    try:
+        proc = run_git(['log', "--pretty=%h,%an,%at", fname])
+        return proc.stdout.decode('utf-8').strip().split('\n')
+    finally:
+        os.chdir(oldcwd)
+
+
 if __name__ == '__main__':
     clone('https://github.com/dhh1128/tt.git', '/Users/dhardman/code/tt2')
     pull('/Users/dhardman/code/tt2')

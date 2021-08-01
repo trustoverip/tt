@@ -62,9 +62,13 @@ def test_pages_iter(scratch_space):
 def test_page():
     page = tw.Page(SAMPLE_PAGE)
     assert page.is_term
-    assert page.term == "sample-page"
+    assert page.term == "sample page"
     assert "#tag1" in page.tags
 
 
-if __name__ == '__main__':
-    test_page()
+def test_hovertext():
+    page = tw.Page(SAMPLE_PAGE)
+    ht = page.hovertext
+    assert ht.startswith('A common context')
+    assert ht.endswith('associated terms.')
+    assert '<' not in ht
