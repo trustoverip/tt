@@ -7,7 +7,8 @@ SAMPLE_GLOSSARY_CFG = json.loads("""{
     "title": "My Simple Glossary",
     "sources": [
         {
-            "wiki": "git@github.com:dhh1128/scifi-terms.git"
+            "wikix": "git@github.com:dhh1128/scifi-terms.git",
+            "wiki": "ctwg-terms"
         }
     ]
 }""")

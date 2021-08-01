@@ -66,5 +66,9 @@ def test_page():
     assert "#tag1" in page.tags
 
 
-if __name__ == '__main__':
-    test_page()
+def test_hovertext():
+    page = tw.Page(SAMPLE_PAGE)
+    ht = page.hovertext
+    assert ht.startswith('A common context')
+    assert ht.endswith('associated terms.')
+    assert '<' not in ht

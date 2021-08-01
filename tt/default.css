@@ -20,14 +20,42 @@ main {
 }
 
 dt {
-    margin-top: 1em;
+    margin-top: 1.4em;
     color: #3061a8;
     font-size: 125%;
     font-family: Verdana, sans-serif;
 }
 
+dt.letter {
+    text-align: center;
+    font-weight: bold;
+    color: #999;
+    border-bottom: solid 1px #ddd;
+    margin-left: 25%;
+    margin-right: 25%;
+    margin-top: 2.2em;
+}
+
+nav {
+    padding: 4px 16px;
+    text-align: center;
+    background-color: #ddd;
+    color: #888;
+}
+
 dd {
     margin-left: 2em;
+}
+
+dt > span.tag {
+  float: right;
+  background-color: #eee;
+  border: 1px solid #ccc;
+  padding: 2px 4px;
+  margin-right: 4px;
+  font-size: 60%;
+  font-family: Verdana;
+  color: #666;
 }
 
 dd>p:first-child {
@@ -39,13 +67,8 @@ a {
     text-decoration: none;
 }
 
-a:link {
-    border-bottom: dashed 1px #ccc;
-}
-
 a:hover {
     border-bottom: solid 1px #3061a8;
-    background-color: #fff;
 }
 
 a:active {
@@ -54,4 +77,15 @@ a:active {
 
 a:visited {
     color: #6161a8;
+}
+
+nav > a, nav > a:visited {
+    color: black;
+}
+
+p.meta {
+    font-size: 80%;
+    color: #bbb;
+    text-align: right;
+    margin-top: -0.9em;
 }

@@ -35,6 +35,21 @@ def walk_hyperlinks(ast):
                 yield link
 
 
+_TAG_PAT = re.compile('<[^>]+>')
+
+
+def make_hovertext(ast):
+    r = marko.HTMLRenderer()
+    txt = _TAG_PAT.sub('', r.render(ast))
+    i = txt.find('\n')
+    if i > -1:
+        txt = txt[:i].rstrip()
+    i = txt.find('. ')
+    if i > -1:
+        txt = txt[:i + 1]
+    return txt
+
+
 def split(ast):
     sections = []
     section_children = []

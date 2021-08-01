@@ -1,6 +1,3 @@
-import os
-import re
-import subprocess
 import weakref
 
 from .tag import normalize
@@ -80,6 +77,8 @@ class Page:
         self._ast = None
         self._sections = None
         self.term = self.fname[:-3].replace('-', ' ')
+        self._hovertext = None
+        self._history = None
 
     @property
     def wiki(self):
@@ -87,7 +86,7 @@ class Page:
 
     @property
     def is_term(self):
-        return self.fname not in ['Home.md']
+        return self.fname not in ['Home.md', 'Tags.md']
 
     @property
     def acronym(self):
@@ -107,6 +106,18 @@ class Page:
     def fragment(self):
         return markdown.title_to_fragment(self.term)
 
+    @property
+    def hovertext(self):
+        if self._hovertext is None:
+            self._hovertext = ""
+            dfn = self.get_section_by_fragment('definition')
+            if dfn:
+                for child in dfn.children:
+                    if type(child) is markdown.marko.block.Paragraph:
+                        self._hovertext = markdown.make_hovertext(child)
+                        break
+        return self._hovertext
+
     def get_section_by_fragment(self, fragment):
         for item in self.sections:
             if item.fragment == fragment:
@@ -114,9 +125,17 @@ class Page:
 
     @property
     def tags(self):
+        x = []
+        w = self.wiki
+        if w:
+            x.append(w.tag)
         ts = self.get_section_by_fragment('tags')
         if ts:
-            return TAGS_SPLITTER.split(ts.text)
+            term_specific_tags = TAGS_SPLITTER.sub(' ', ts.text).strip()
+            if term_specific_tags:
+                x += term_specific_tags.split(' ')
+        x.sort()
+        return x
 
     @property
     def ast(self):
@@ -124,6 +143,45 @@ class Page:
             with open(self.path, 'rt') as f:
                 self._ast = markdown.parse(f.read())
         return self._ast
+
+    @property
+    def history(self):
+        if self._history is None:
+            try:
+                self._history = get_history(self.path)
+            except:
+                self._history = []
+        return self._history
+
+    @property
+    def version(self):
+        return len(self._history) if self.history else 0
+
+    @property
+    def hash(self):
+        return self._history[0][:7] if self.history else 0
+
+    @property
+    def creation_date(self):
+        if self.history:
+            return int(self._history[-1][self._history[-1].rfind(',') + 1:])
+
+    @property
+    def lastmod_date(self):
+        if self.history:
+            return int(self._history[0][self._history[0].rfind(',') + 1:])
+
+    @property
+    def contributors(self):
+        if self.history:
+            c = []
+            for event in self._history:
+                i = event.find(',')
+                j = event.rfind(',')
+                person = event[i+1:j]
+                if person not in c:
+                    c.append(person)
+            return c
 
     @property
     def sections(self):
