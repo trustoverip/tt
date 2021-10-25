@@ -7,8 +7,7 @@ SAMPLE_GLOSSARY_CFG = json.loads("""{
     "title": "My Simple Glossary",
     "sources": [
         {
-            "wikix": "git@github.com:dhh1128/scifi-terms.git",
-            "wiki": "ctwg-terms"
+            "wiki": "git@github.com:dhh1128/scifi-terms.git"
         }
     ]
 }""")
@@ -17,8 +16,8 @@ SAMPLE_GLOSSARY_CFG = json.loads("""{
 def test_ultra_simple_write():
     g = Glossary(SAMPLE_GLOSSARY_CFG)
     txt = g.render()
-    with open("/Users/dhardman/Desktop/x.html", "wt") as f:
-        f.write(txt)
+    #with open("x.html", "wt") as f:
+    #    f.write(txt)
 
     expected = ['<html>', '<head>', '</head>', '<body>',
                 '<title>My Simple Glossary</title>',
@@ -31,4 +30,7 @@ def test_ultra_simple_write():
     assert not bool(missing)
 
 
+def test_included_pages():
+    g = Glossary(SAMPLE_GLOSSARY_CFG)
+    g._sources[0].tags = "#x and #y"
 
