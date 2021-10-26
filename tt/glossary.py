@@ -5,6 +5,7 @@ import sys
 
 from . import tw
 from . import markdown
+from . import tagsel
 
 
 import os
@@ -18,7 +19,9 @@ WIKI_PAGE_LINK_PAT = re.compile(r'[a-z0-9]+(-[a-z0-9]+)*$', re.IGNORECASE)
 class Source:
     def __init__(self, cfg):
         self.wiki = tw.TermsWiki(cfg.get('wiki'))
-        self.tags = cfg.get('tags', None)
+        self.subset = cfg.get('subset', None)
+        if self.subset:
+            self.subset = tagsel.parse(self.tags)
         self.adopt = cfg.get('adopt', False)
 
 
@@ -51,7 +54,8 @@ class Glossary:
             for source in self._sources:
                 for page in source.wiki.pages:
                     if page.is_term:
-                        self._pages.append(page)
+                        if (source.subset is None) or source.subset.matches(page.tags):
+                            self._pages.append(page)
         self._pages.sort(key=lambda p: p.fragment)
         return self._pages
 
