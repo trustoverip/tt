@@ -16,8 +16,6 @@ SAMPLE_GLOSSARY_CFG = json.loads("""{
 def test_ultra_simple_write():
     g = Glossary(SAMPLE_GLOSSARY_CFG)
     txt = g.render()
-    #with open("x.html", "wt") as f:
-    #    f.write(txt)
 
     expected = ['<html>', '<head>', '</head>', '<body>',
                 '<title>My Simple Glossary</title>',
@@ -32,5 +30,10 @@ def test_ultra_simple_write():
 
 def test_included_pages():
     g = Glossary(SAMPLE_GLOSSARY_CFG)
-    g._sources[0].tags = "#x and #y"
+    x = g.render()
+    # Filter out some of the terms
+    g._sources[0].subset = tagsel.parse("#hardscience or #startrek")
+    g._pages = None
+    subset = g.render()
+    assert len(x) > len(subset)
 
