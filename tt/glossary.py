@@ -29,6 +29,11 @@ class Glossary:
     def __init__(self, cfg):
         self._title = cfg.get('title')
         self.css = cfg.get('css')
+        self.frame = cfg.get('frame')
+        if self.frame:
+            import requests
+            r = requests.get(self.frame)
+            self.frame = r.text
         sources = cfg.get('sources')
         self._sources = []
         for source in sources:
@@ -37,7 +42,7 @@ class Glossary:
 
     @property
     def is_standalone_doc(self):
-        return self.title or self._css
+        return bool(self._title) or bool(self._css)
 
     @property
     def title(self):
@@ -143,13 +148,17 @@ class Glossary:
                 raise
         inner.write("</dl>\n")
 
+        nav.write('<nav>[ ')
+        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+            if char in toc:
+                nav.write('<a href="#%s">%s</a> ' % (char, char))
+            else:
+                nav.write('%s ' % char)
+        nav.write(']</nav>\n')
+
         if self.is_standalone_doc:
-            nav.write('<nav>[ ')
-            for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-                if char in toc:
-                    nav.write('<a href="#%s">%s</a> ' % (char, char))
-                else:
-                    nav.write('%s ' % char)
-            nav.write(']</nav>\n')
             return doc.getvalue() + nav.getvalue() + "<main>\n" + inner.getvalue() + "</main>\n</body>\n</html>\n"
-        return inner.getvalue()
+        elif self.frame:
+            return self.frame.replace('%nav', nav.getvalue()).replace('%main', inner.getvalue())
+        else:
+            return inner.getvalue()
