@@ -43,7 +43,7 @@ class Glossary:
 
     @property
     def is_standalone_doc(self):
-        return bool(self._title) or bool(self._css)
+        return bool(self._title) or bool(self.css)
 
     @property
     def title(self):
