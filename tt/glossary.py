@@ -29,6 +29,12 @@ class Glossary:
     def __init__(self, cfg):
         self._title = cfg.get('title')
         self.css = cfg.get('css')
+        self.write_meta = cfg.get('write_meta', True)
+        self.frame = cfg.get('frame')
+        if self.frame:
+            import requests
+            r = requests.get(self.frame)
+            self.frame = r.text
         sources = cfg.get('sources')
         self._sources = []
         for source in sources:
@@ -37,7 +43,7 @@ class Glossary:
 
     @property
     def is_standalone_doc(self):
-        return self.title or self._css
+        return bool(self._title) or bool(self.css)
 
     @property
     def title(self):
@@ -129,7 +135,7 @@ class Glossary:
                 this_def = page.get_section_by_fragment('definition')
                 if this_def:
                     inner.write("<dd>%s" % markdown.render_html(this_def.content))
-                    if page.history:
+                    if page.history and self.write_meta:
                         cdate = datetime.date.fromtimestamp(page.creation_date).strftime("%Y-%m-%d")
                         inner.write('<p class="meta">version %d, commit %s, created %s, ' % (
                             page.version, page.hash, cdate))
@@ -143,13 +149,17 @@ class Glossary:
                 raise
         inner.write("</dl>\n")
 
+        nav.write('<nav>[ ')
+        for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
+            if char in toc:
+                nav.write('<a href="#%s">%s</a> ' % (char, char))
+            else:
+                nav.write('%s ' % char)
+        nav.write(']</nav>\n')
+
         if self.is_standalone_doc:
-            nav.write('<nav>[ ')
-            for char in 'ABCDEFGHIJKLMNOPQRSTUVWXYZ':
-                if char in toc:
-                    nav.write('<a href="#%s">%s</a> ' % (char, char))
-                else:
-                    nav.write('%s ' % char)
-            nav.write(']</nav>\n')
             return doc.getvalue() + nav.getvalue() + "<main>\n" + inner.getvalue() + "</main>\n</body>\n</html>\n"
-        return inner.getvalue()
+        elif self.frame:
+            return self.frame.replace('%nav', nav.getvalue()).replace('%main', inner.getvalue())
+        else:
+            return inner.getvalue()
