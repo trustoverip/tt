@@ -29,6 +29,7 @@ class Glossary:
     def __init__(self, cfg):
         self._title = cfg.get('title')
         self.css = cfg.get('css')
+        self.write_meta = cfg.get('write_meta', True)
         self.frame = cfg.get('frame')
         if self.frame:
             import requests
@@ -134,7 +135,7 @@ class Glossary:
                 this_def = page.get_section_by_fragment('definition')
                 if this_def:
                     inner.write("<dd>%s" % markdown.render_html(this_def.content))
-                    if page.history:
+                    if page.history and self.write_meta:
                         cdate = datetime.date.fromtimestamp(page.creation_date).strftime("%Y-%m-%d")
                         inner.write('<p class="meta">version %d, commit %s, created %s, ' % (
                             page.version, page.hash, cdate))
