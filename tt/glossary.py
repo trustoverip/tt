@@ -14,6 +14,7 @@ with open(os.path.join(os.path.dirname(__file__), 'default.css'), 'rt') as f:
 del os
 
 WIKI_PAGE_LINK_PAT = re.compile(r'[a-z0-9]+(-[a-z0-9]+)*$', re.IGNORECASE)
+SHORT_EXTERNAL_GLOSSARY_LINK_PAT = re.compile(r'([a-z0-9]+(?:-[a-z0-9]+)*)@([a-z0-9]+(?:-[a-z0-9]+)*)$', re.IGNORECASE)
 
 
 class Source:
@@ -96,6 +97,10 @@ class Glossary:
                     else:
                         sys.stderr.write('Broken hyperlink to %s in %s.\n' % (link.dest, page.path))
                         sys.stderr.flush()
+                else:
+                    m = SHORT_EXTERNAL_GLOSSARY_LINK_PAT.match(link.dest)
+                    if m:
+                        link.dest = 'https://trustoverip.github.io/' + m.group(2) + '/glossary.html#' + m.group(1)
 
     def render(self):
         self.handle_synonyms()
