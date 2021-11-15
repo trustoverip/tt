@@ -133,7 +133,7 @@ class Glossary:
                     current_char = char
                     toc.append(char)
                     inner.write('\n<dt id="%s" class="letter">%s</td>' % (char, char))
-                inner.write('\n<dt id="%s">%s ' % (page.fragment, page.term_minus_acronym))
+                inner.write('\n<dt id="%s"><a href="#%s">%s</a> ' % (page.fragment, page.fragment, page.term_minus_acronym))
                 for t in page.tags:
                     inner.write('<span class="tag">%s</span>' % t)
                 inner.write('</dt>\n')
