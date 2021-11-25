@@ -112,14 +112,14 @@ p.meta {
     padding-right: 4px;
     padding-top: 4px;
     margin-left: -20px;
-    display: none;
     cursor: pointer;
     width:16px;
     height:16px;
+    fill: red;
 }
 
 dt:not(.letter):hover > ._slf {
-  display: block;
+    background-color: yellow;
 }
 
 ._xl {
@@ -154,18 +154,41 @@ function copyUrl(url) {
 function goto(url) {
   window.location = url;
 }
+
+function makeSvg(cls, onclick, parent, nextSibling) {
+    svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.className = cls;
+    svg.setAttribute("onclick", onclick);
+    use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttributeNS("http://www.w3.org/2000/svg", "href", `#${cls}`);
+    svg.appendChild(use);
+    parent.insertBefore(svg, nextSibling);
+}
+
+function addLinks() {
+  entries = document.getElementById('glossary_content').childNodes;
+  for (var i = 0; i < entries.length; i += 1) {
+    item = entries[i];
+    if (item.nodeName == 'DT' && !item.classList.contains('letter')) {
+      fragment = item.id
+      alert(`Inserting in ${fragment}; children count = ${item.children.length}`);
+      alert(`inserting svg before ${item.firstChild.nodeName}`)
+      makeSvg("_slf", `copyUrl('#${fragment}')`, item, item.firstChild);
+    }
+  }
+}
   </script>
 </head>
-<body>
+<body onload="addLinks()">
 
 <svg style="display:none">
   <symbol id="_slf" viewBox="0 0 16 16">
-    <path style="fill:gray" fill-rule="evenodd"
+    <path style="fill:#aaa" fill-rule="evenodd"
       d="M7.775 3.275a.75.75 0 001.06 1.06l1.25-1.25a2 2 0 112.83 2.83l-2.5 2.5a2 2 0 01-2.83 0 .75.75 0 00-1.06 1.06 3.5 3.5 0 004.95 0l2.5-2.5a3.5 3.5 0 00-4.95-4.95l-1.25 1.25zm-4.69 9.64a2 2 0 010-2.83l2.5-2.5a2 2 0 012.83 0 .75.75 0 001.06-1.06 3.5 3.5 0 00-4.95 0l-2.5 2.5a3.5 3.5 0 004.95 4.95l1.25-1.25a.75.75 0 00-1.06-1.06l-1.25 1.25a2 2 0 01-2.83 0z"/>
   </symbol>
   <symbol id="_xl" viewBox="0 -256 1850 1850">
     <g transform="matrix(1,0,0,-1,30.372881,1426.9492)">
-      <path style="fill:gray"
+      <path style="fill:#aaa"
        d="M 1408,608 V 288 Q 1408,169 1323.5,84.5 1239,0 1120,0 H 288 Q 169,0 84.5,84.5 0,169 0,288 v 832 Q 0,1239 84.5,1323.5 169,1408 288,1408 h 704 q 14,0 23,-9 9,-9 9,-23 v -64 q 0,-14 -9,-23 -9,-9 -23,-9 H 288 q -66,0 -113,-47 -47,-47 -47,-113 V 288 q 0,-66 47,-113 47,-47 113,-47 h 832 q 66,0 113,47 47,47 47,113 v 320 q 0,14 9,23 9,9 23,9 h 64 q 14,0 23,-9 9,-9 9,-23 z m 384,864 V 960 q 0,-26 -19,-45 -19,-19 -45,-19 -26,0 -45,19 L 1507,1091 855,439 q -10,-10 -23,-10 -13,0 -23,10 L 695,553 q -10,10 -10,23 0,13 10,23 l 652,652 -176,176 q -19,19 -19,45 0,26 19,45 19,19 45,19 h 512 q 26,0 45,-19 19,-19 19,-45 z" />
     </g>
   </symbol>
@@ -175,9 +198,9 @@ function goto(url) {
 <nav>[ A B <a href="#C">C</a> <a href="#D">D</a> E F <a href="#G">G</a> H I J K L M N O P Q R <a href="#S">S</a> <a href="#T">T</a> U <a href="#V">V</a> W X Y Z ]</nav>
 
 <main>
-<dl>
-<dt id="C" class="letter">C</td>
-  <dt id="concept"><svg class="_slf" onclick="copyUrl('#concept')"><use xlink:href="#_slf"/></svg>concept <svg class="_xl" onclick="javascript:goto('https://github.com/trustoverip/ctwg/wiki/concept')"><use xlink:href="#_xl"/></svg><span class="tag">#ctwg</span></dt>
+<dl id="glossary_content">
+<dt id="C" class="letter">C</dt>
+<dt id="concept">concept <svg class="_xl" onclick="javascript:goto('https://github.com/trustoverip/ctwg/wiki/concept')"><use href="#_xl"/></svg><span class="tag">#ctwg</span></dt>
 <dd><!--REQUIRED--in 1-3 sentences that describe the concept to a layperson with reasonable accuracy.-->
 <p>A concept tries to capture the idea behind a classification of entities[^1], allowing us to reason about everything in the class as if it were one thing. For example, the ideas (<a href="https://en.wikipedia.org/wiki/Mental_representation">mental representations</a>) you have when processing the sentences &quot;I can drink beer from a beer glass' and 'I can drink beer from a coffee mug' shows that the concepts that are behind 'beer glass' and 'coffee mug' differ. Note that in order to communicate about this idea, we also need a word or phrase (i.e., a term) that we can use to refer to (instances of) this idea.</p>
 <p>The <a href="#pattern-terminology">terminology pattern</a> provides an overview of how this concept fits in with related concepts.</p>
