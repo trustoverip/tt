@@ -33,9 +33,13 @@ class Glossary:
         self.write_meta = cfg.get('write_meta', True)
         self.frame = cfg.get('frame')
         if self.frame:
-            import requests
-            r = requests.get(self.frame)
-            self.frame = r.text
+            if "://" in self.frame:
+                import requests
+                r = requests.get(self.frame)
+                self.frame = r.text
+            else:
+                with open(self.frame, 'rt') as f:
+                    self.frame = f.read()
         sources = cfg.get('sources')
         self._sources = []
         for source in sources:
@@ -112,6 +116,22 @@ class Glossary:
         doc = io.StringIO()
         nav = io.StringIO()
         inner = io.StringIO()
+        # In the long run, I'd like to write a feature entirely in javascript,
+        # where, after the page loads, js automatically adds SVGs with the
+        # features that support hovering over a term to get a clickable icon
+        # to copy its URL or go to its source. I started writing such a feature
+        # in commit 9f91400. It didn't work because the dynamically created
+        # <svg> tags weren't being recognized by the browser, possibly due to
+        # a namespace problem. So I gave up and just decided to have the glossary
+        # tool generate the SVGs itself. But this requires some infrastructure
+        # in the rest of the doc -- some functions and styles. So the following
+        # line keeps things clean by checking to see whether the frame of the
+        # glossary has the right supporting infrastructure. if yes, then the
+        # glossary rendering code inserts the SVGs.
+        use_svgs = (not self.is_standalone_doc) and self.frame and (
+                '<svg' in self.frame and '_slf' in self.frame and '_xl' in self.frame
+                and 'copyUrl' in self.frame and 'goto' in self.frame
+        )
 
         if self.is_standalone_doc:
             doc.write("<html>\n<head>\n")
@@ -124,7 +144,7 @@ class Glossary:
 
         toc = []
         current_char = None
-        inner.write("<dl>")
+        inner.write('<dl id="glossary_content">')
         for page in self.pages:
             try:
                 # First term that starts with this letter?
@@ -133,7 +153,13 @@ class Glossary:
                     current_char = char
                     toc.append(char)
                     inner.write('\n<dt id="%s" class="letter">%s</td>' % (char, char))
-                inner.write('\n<dt id="%s"><a href="#%s">%s</a> ' % (page.fragment, page.fragment, page.term_minus_acronym))
+                inner.write('\n<dt id="%s">' % page.fragment)
+                if use_svgs:
+                    inner.write('<svg class="_slf" onclick="copyUrl(\'#%s\')"><use href="#_slf"/></svg>' % page.fragment)
+                inner.write('%s ' % (page.term_minus_acronym))
+                if use_svgs:
+                    inner.write('<svg class="_xl" onclick="goto(\'%s/%s\')"><use href="#_xl"/></svg>' % (
+                                page.wiki.code_repo_url[:-4] + '/wiki/', page.fragment))
                 for t in page.tags:
                     inner.write('<span class="tag">%s</span>' % t)
                 inner.write('</dt>\n')
