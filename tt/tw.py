@@ -86,7 +86,7 @@ class Page:
 
     @property
     def is_term(self):
-        return self.fname not in ['Home.md', 'Tags.md']
+        return self.get_section_by_fragment('definition') or self.get_section_by_fragment('see')
 
     @property
     def acronym(self):
