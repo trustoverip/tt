@@ -120,8 +120,10 @@ class Page:
 
     def get_section_by_fragment(self, fragment):
         for item in self.sections:
-            if item.fragment == fragment:
-                return item
+            h = item.heading
+            if h:
+                if item.fragment == fragment:
+                    return item
 
     @property
     def tags(self):
@@ -188,20 +190,3 @@ class Page:
         if self._sections is None:
             self._sections = markdown.split(self.ast)
         return self._sections
-
-    def make_acronym_twin(self):
-        twin = Page(self.path, self.wiki)
-        twin.term = self.acronym
-        # Parse a markdown fragment into a marko.block.Document object
-        twin._ast = markdown.parse("Synonym for [%s](%s)." % (
-            self.term_minus_acronym, self.fragment))
-        # Convert the top-level obj into a Section so it doesn't get
-        # enclosed in <html>...</html> when rendered.
-        section = markdown.Section(twin._ast.children)
-        # Adjust internals of the section so lazy calculation
-        # doesn't interpret its type and content wrong.
-        section._title = 'definition'
-        section._content = section.children[0]
-        # Now make the twin look like something we actually parsed from markdown.
-        twin._sections = [section]
-        return twin
