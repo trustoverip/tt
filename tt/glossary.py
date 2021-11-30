@@ -74,17 +74,6 @@ class Glossary:
     def primary_source(self):
         return self._sources[0] if self._sources else None
 
-    def handle_synonyms(self):
-        # Make a copy of pages list that I can iterate safely
-        # while I'm changing the other list.
-        pages = self.pages[:]
-        for page in pages:
-            twin = None
-            if page.acronym:
-                twin = page.make_acronym_twin()
-                self._pages.append(twin)
-        self._pages.sort(key=lambda p: p.fragment)
-
     def find_page(self, fragment):
         for page in self.pages:
             if page.fragment == fragment:
@@ -107,7 +96,6 @@ class Glossary:
                         link.dest = 'https://trustoverip.github.io/' + m.group(2) + '/glossary.html#' + m.group(1)
 
     def render(self):
-        self.handle_synonyms()
         self.fix_hyperlinks()
 
         # Write the pieces of the output to 3 separate buffers so we can build
