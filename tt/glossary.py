@@ -164,6 +164,8 @@ class Glossary:
                     inner.write('<span class="tag">%s</span>' % t)
                 inner.write('</dt>\n')
                 this_def = page.get_section_by_fragment('definition')
+                if not this_def:
+                    this_def = page.get_section_by_fragment('see')
                 if this_def:
                     inner.write("<dd>%s" % markdown.render_html(this_def.content))
                     if page.history and self.write_meta:
