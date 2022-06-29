@@ -37,3 +37,21 @@ def test_included_pages():
     subset = g.render()
     assert len(x) > len(subset)
 
+
+SAMPLE_GLOSSARY_SUBSET_CFG = json.loads("""{
+    "title": "My Simple Glossary",
+    "sources": [
+        {
+            "wiki": "git@github.com:dhh1128/scifi-terms.git",
+            "subset": "not #startrek"
+        }
+    ]
+}""")
+
+
+def test_subset_in_config():
+    g1 = Glossary(SAMPLE_GLOSSARY_CFG)
+    x = g1.render()
+    g2 = Glossary(SAMPLE_GLOSSARY_SUBSET_CFG)
+    y = g2.render()
+    assert len(x) > len(y)

@@ -22,7 +22,7 @@ class Source:
         self.wiki = tw.TermsWiki(cfg.get('wiki'))
         self.subset = cfg.get('subset', None)
         if self.subset:
-            self.subset = tagsel.parse(self.tags)
+            self.subset = tagsel.parse(self.subset)
         self.adopt = cfg.get('adopt', False)
 
 
