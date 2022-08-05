@@ -61,7 +61,7 @@ def split(ast):
             if section_children:
                 # If this new section is a peer or outdent from the
                 # last section we were reading...
-                if child.level <= first_header_level:
+                if first_header_level is None or (child.level <= first_header_level):
                     sections.append(Section(section_children))
                     section_children = [child]
                 else:
